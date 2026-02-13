@@ -8,15 +8,17 @@ struct PhotoCardGeneratorView: View {
     @State private var showingCamera = false
     @State private var capturedImage: UIImage?
     @State private var recognizedText = ""
-    @State private var isProcessing = false
+    @State private var errorMessage = ""
     @State private var generatedCards: [CardDraft] = []
     @State private var phase: Phase = .capture
 
     enum Phase {
-        case capture    // 撮影前
-        case processing // OCR処理中
-        case review     // カード確認・編集
+        case capture
+        case processing
+        case review
     }
+
+    private var useAI: Bool { ClaudeAPIService.hasAPIKey }
 
     var body: some View {
         NavigationStack {
@@ -52,15 +54,27 @@ struct PhotoCardGeneratorView: View {
     private var capturePhase: some View {
         VStack(spacing: 24) {
             Spacer()
-            Image(systemName: "camera.viewfinder")
+            Image(systemName: useAI ? "sparkles" : "camera.viewfinder")
                 .font(.system(size: 72))
                 .foregroundStyle(.indigo)
             Text("教科書や参考書のページを撮影")
                 .font(.title3)
                 .fontWeight(.semibold)
-            Text("赤字や色付きの用語を自動検出し\n前後の文脈からカードを作成します")
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
+            if useAI {
+                Label("AI分析モード", systemImage: "checkmark.circle.fill")
+                    .font(.subheadline)
+                    .foregroundStyle(.green)
+                Text("AIが画像を分析し、重要な用語と\nその意味を自動でカードにします")
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+            } else {
+                Label("OCRモード（設定からAIに切替可能）", systemImage: "info.circle")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                Text("赤字や色付きの用語を自動検出し\n前後の文脈からカードを作成します")
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+            }
             Spacer()
             Button {
                 showingCamera = true
@@ -92,7 +106,7 @@ struct PhotoCardGeneratorView: View {
             }
             ProgressView()
                 .scaleEffect(1.5)
-            Text("テキストを認識中...")
+            Text(useAI ? "AIが画像を分析中..." : "テキストを認識中...")
                 .foregroundStyle(.secondary)
             Spacer()
         }
@@ -119,7 +133,14 @@ struct PhotoCardGeneratorView: View {
                 .foregroundStyle(.secondary)
             Text("カードを生成できませんでした")
                 .font(.headline)
-            if !recognizedText.isEmpty {
+            if !errorMessage.isEmpty {
+                Text(errorMessage)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+            if !recognizedText.isEmpty && !useAI {
                 Text("認識されたテキスト:")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -135,6 +156,7 @@ struct PhotoCardGeneratorView: View {
             }
             Button("もう一度撮影") {
                 phase = .capture
+                errorMessage = ""
             }
             .buttonStyle(.borderedProminent)
             .tint(.indigo)
@@ -167,7 +189,6 @@ struct PhotoCardGeneratorView: View {
                 }
             }
 
-            // 追加ボタン
             VStack(spacing: 8) {
                 Button {
                     addSelectedCards()
@@ -184,6 +205,7 @@ struct PhotoCardGeneratorView: View {
                 Button("もう一度撮影") {
                     phase = .capture
                     generatedCards = []
+                    errorMessage = ""
                 }
                 .font(.subheadline)
             }
@@ -196,6 +218,29 @@ struct PhotoCardGeneratorView: View {
 
     private func processImage(_ image: UIImage) {
         phase = .processing
+        errorMessage = ""
+
+        if useAI {
+            processWithAI(image)
+        } else {
+            processWithOCR(image)
+        }
+    }
+
+    private func processWithAI(_ image: UIImage) {
+        ClaudeAPIService.generateCards(from: image) { result in
+            switch result {
+            case .success(let cards):
+                generatedCards = cards.map { CardDraft(front: $0.front, back: $0.back) }
+            case .failure(let error):
+                errorMessage = error.localizedDescription
+                generatedCards = []
+            }
+            phase = .review
+        }
+    }
+
+    private func processWithOCR(_ image: UIImage) {
         TextRecognizer.recognizeAndGenerateCards(from: image) { text, cards in
             recognizedText = text
             generatedCards = cards.map { CardDraft(front: $0.front, back: $0.back) }
