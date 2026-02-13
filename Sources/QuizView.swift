@@ -28,7 +28,6 @@ struct QuizView: View {
 
     private var quizContent: some View {
         VStack(spacing: 20) {
-            // 進捗バー
             ProgressView(value: Double(reviewedCount), total: Double(dueCards.count))
                 .tint(.indigo)
                 .padding(.horizontal)
@@ -39,7 +38,6 @@ struct QuizView: View {
 
             Spacer()
 
-            // カード
             cardView
                 .onTapGesture {
                     withAnimation(.spring(response: 0.4)) {
@@ -49,9 +47,8 @@ struct QuizView: View {
 
             Spacer()
 
-            // 回答ボタン
             if isFlipped {
-                ratingButtons
+                answerButtons
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             } else {
                 Text("タップしてめくる")
@@ -97,21 +94,31 @@ struct QuizView: View {
         .frame(height: 250)
     }
 
-    private var ratingButtons: some View {
-        HStack(spacing: 8) {
-            ForEach(ReviewRating.allCases, id: \.rawValue) { rating in
-                Button {
-                    answerCard(rating: rating)
-                } label: {
-                    Text(rating.label)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                }
-                .buttonStyle(.bordered)
-                .tint(tintColor(for: rating))
+    private var answerButtons: some View {
+        HStack(spacing: 16) {
+            Button {
+                answerCard(mastered: false)
+            } label: {
+                Label("覚えてない", systemImage: "xmark.circle")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
             }
+            .buttonStyle(.bordered)
+            .tint(.red)
+
+            Button {
+                answerCard(mastered: true)
+            } label: {
+                Label("覚えた", systemImage: "checkmark.circle")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            }
+            .buttonStyle(.bordered)
+            .tint(.green)
         }
     }
 
@@ -133,10 +140,10 @@ struct QuizView: View {
         }
     }
 
-    private func answerCard(rating: ReviewRating) {
-        let card = dueCards[currentIndex]
-        let updated = SpacedRepetition.review(card: card, rating: rating)
-        store.updateCard(deckID: deck.id, card: updated)
+    private func answerCard(mastered: Bool) {
+        var card = dueCards[currentIndex]
+        card.isMastered = mastered
+        store.updateCard(deckID: deck.id, card: card)
 
         reviewedCount += 1
         isFlipped = false
@@ -147,15 +154,6 @@ struct QuizView: View {
             withAnimation {
                 isFinished = true
             }
-        }
-    }
-
-    private func tintColor(for rating: ReviewRating) -> Color {
-        switch rating {
-        case .again: return .red
-        case .hard: return .orange
-        case .good: return .green
-        case .easy: return .blue
         }
     }
 }

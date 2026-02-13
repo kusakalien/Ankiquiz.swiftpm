@@ -78,6 +78,11 @@ struct DeckRow: View {
                         .font(.caption)
                         .foregroundStyle(.orange)
                 }
+                if deck.masteredCardCount > 0 {
+                    Label("\(deck.masteredCardCount)枚 習得済み", systemImage: "checkmark.circle")
+                        .font(.caption)
+                        .foregroundStyle(.green)
+                }
             }
         }
         .padding(.vertical, 4)
