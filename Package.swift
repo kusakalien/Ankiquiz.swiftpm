@@ -15,7 +15,7 @@ let package = Package(
             bundleIdentifier: "com.example.AnkiQuiz",
             displayVersion: "1.0",
             bundleVersion: "1",
-            appIcon: .placeholder(icon: .book),
+            appIcon: .placeholder(icon: .openBook),
             accentColor: .presetColor(.indigo),
             supportedDeviceFamilies: [.pad, .phone],
             supportedInterfaceOrientations: [
