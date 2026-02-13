@@ -10,6 +10,7 @@ struct DeckDetailView: View {
     @EnvironmentObject var store: DeckStore
     let deck: Deck
     @State private var showingAddCard = false
+    @State private var showingPhotoGenerator = false
     @State private var selectedFilter: CardFilter = .all
 
     private var currentDeck: Deck {
@@ -103,15 +104,25 @@ struct DeckDetailView: View {
         .navigationTitle(currentDeck.name)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showingAddCard = true
-                } label: {
-                    Image(systemName: "plus")
+                HStack(spacing: 16) {
+                    Button {
+                        showingPhotoGenerator = true
+                    } label: {
+                        Image(systemName: "camera")
+                    }
+                    Button {
+                        showingAddCard = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
                 }
             }
         }
         .sheet(isPresented: $showingAddCard) {
             AddCardView(deckID: deck.id)
+        }
+        .sheet(isPresented: $showingPhotoGenerator) {
+            PhotoCardGeneratorView(deckID: deck.id)
         }
     }
 }
