@@ -58,7 +58,7 @@ struct PhotoCardGeneratorView: View {
             Text("教科書や参考書のページを撮影")
                 .font(.title3)
                 .fontWeight(.semibold)
-            Text("テキストを認識して\n自動でカードを作成します")
+            Text("赤字や色付きの用語を自動検出し\n前後の文脈からカードを作成します")
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
             Spacer()
@@ -196,9 +196,8 @@ struct PhotoCardGeneratorView: View {
 
     private func processImage(_ image: UIImage) {
         phase = .processing
-        TextRecognizer.recognizeText(from: image) { text in
+        TextRecognizer.recognizeAndGenerateCards(from: image) { text, cards in
             recognizedText = text
-            let cards = TextRecognizer.generateCards(from: text)
             generatedCards = cards.map { CardDraft(front: $0.front, back: $0.back) }
             phase = .review
         }
