@@ -39,11 +39,6 @@ struct ContentView: View {
                 .fontWeight(.semibold)
             Text("＋ボタンで新しいデッキを作成しましょう")
                 .foregroundStyle(.secondary)
-            Button("サンプルデッキを追加") {
-                store.addSampleDeck()
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(.indigo)
         }
         .padding()
     }
