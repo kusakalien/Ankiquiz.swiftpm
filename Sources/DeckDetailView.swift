@@ -10,7 +10,7 @@ struct DeckDetailView: View {
     @EnvironmentObject var store: DeckStore
     let deck: Deck
     @State private var showingAddCard = false
-    @State private var showingPhotoGenerator = false
+    @State private var showingCSVImport = false
     @State private var selectedFilter: CardFilter = .all
 
     private var currentDeck: Deck {
@@ -106,9 +106,9 @@ struct DeckDetailView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack(spacing: 16) {
                     Button {
-                        showingPhotoGenerator = true
+                        showingCSVImport = true
                     } label: {
-                        Image(systemName: "camera")
+                        Image(systemName: "doc.text")
                     }
                     Button {
                         showingAddCard = true
@@ -121,8 +121,8 @@ struct DeckDetailView: View {
         .sheet(isPresented: $showingAddCard) {
             AddCardView(deckID: deck.id)
         }
-        .sheet(isPresented: $showingPhotoGenerator) {
-            PhotoCardGeneratorView(deckID: deck.id)
+        .sheet(isPresented: $showingCSVImport) {
+            CSVImportView(deckID: deck.id)
         }
     }
 }

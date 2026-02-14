@@ -3,7 +3,6 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var store: DeckStore
     @State private var showingAddDeck = false
-    @State private var showingSettings = false
 
     var body: some View {
         NavigationStack {
@@ -16,13 +15,6 @@ struct ContentView: View {
             }
             .navigationTitle("AnkiQuiz")
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        showingSettings = true
-                    } label: {
-                        Image(systemName: "gearshape")
-                    }
-                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showingAddDeck = true
@@ -33,9 +25,6 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingAddDeck) {
                 AddDeckView()
-            }
-            .sheet(isPresented: $showingSettings) {
-                SettingsView()
             }
         }
     }
