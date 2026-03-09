@@ -15,7 +15,7 @@ let package = Package(
             bundleIdentifier: "com.example.AnkiQuiz",
             displayVersion: "1.0",
             bundleVersion: "1",
-            appIcon: .placeholder(icon: .openBook),
+            appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.indigo),
             supportedDeviceFamilies: [.pad, .phone],
             supportedInterfaceOrientations: [
@@ -28,7 +28,10 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "AppModule",
-            path: "Sources"
+            path: "Sources",
+            resources: [
+                .process("../Assets.xcassets")
+            ]
         )
     ]
 )
